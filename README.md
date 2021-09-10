@@ -99,7 +99,7 @@ Default: `true`
 <LineClamp
   @text="A really long text to truncate"
   @interactive={{false}}
-  @truncate={{truncate}}
+  @truncate={{this.truncate}}
 />
 <button class="super-fancy-style" {{action "toggleTruncate"}}>{{buttonText}}</button>
 ```
