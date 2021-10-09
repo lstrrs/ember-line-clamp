@@ -4,11 +4,18 @@
       {{unbound line.text}}
       {{~#if line.needsEllipsis~}}
         <span class="lt-line-clamp__ellipsis"><div class="lt-line-clamp__dummy-element">{{unbound ellipsis}}</div>
-        {{!-- Use div to wrap the ellipsis up so that the see more button can work after google translates the page (Issue #48)--}}
+          {{!-- Use div to wrap the ellipsis up so that the see more button can work after google translates the page (Issue #48)--}}
+          {{#if textSuffix}}
+            &nbsp;<span class="lt-line-clamp__suffix">{{textSuffix}}</span>
+          {{/if}}
           {{#if _showMoreButton}}
             <a data-test-line-clamp-show-more-button="true" href="#" role="button" id="line-clamp-show-more-button" aria-expanded="false" aria-label={{if seeMoreA11yText (unbound seeMoreA11yText) false}} class="lt-line-clamp__more" onclick={{action "toggleTruncate"}}>{{unbound seeMoreText}}</a>
           {{/if}}
         </span>
+      {{else}}
+				{{#if textSuffix}}
+          &nbsp;<span class="lt-line-clamp__suffix">{{textSuffix}}</span>
+        {{/if}}
       {{~/if~}}
     </span>
   {{else if line.newLine}}

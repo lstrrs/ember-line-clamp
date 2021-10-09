@@ -865,4 +865,67 @@ module('Integration | Component | line clamp', function(hooks) {
 
     assert.dom('[data-test-line-clamp-show-more-button]').isFocused('show more button is focused');
   });
+
+  test('text suffix works as expected', async function (assert) {
+    assert.expect(3);
+
+    // Render component
+    await render(hbs`<div style="width: 300px; font-size: 16px; font-family: sans-serif;">
+      {{line-clamp
+        text="helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld"
+        lines=2
+        textSuffix="#ID-001"
+      }}
+    </div>`);
+
+    const element = this.element;
+    const suffixElement = element.querySelector('.lt-line-clamp__suffix');
+
+    assert.ok(element, 'line clamp target exists');
+    assert.dom(suffixElement).hasText('#ID-001');
+    assert.dom(element).containsText('#ID-001');
+  });
+
+  test('\'forceEvaluate\' flag re-triggers the width computation works as expected', async function (assert) {
+    assert.expect(4);
+    const done = assert.async();
+
+    this.set('forceEvaluate', false);
+
+    await render(hbs`<div id="test-conatiner" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+      {{line-clamp
+        text="helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld"
+        lines=3
+        forceEvaluate=forceEvaluate
+      }}
+    </div>`);
+
+    const element = this.element;
+    const linesExceptLast = Array.from(
+      element.querySelectorAll(
+        ".lt-line-clamp__line:not(.lt-line-clamp__line--last)"
+      ));
+    const contentLengthBefore = linesExceptLast.map(e => e.innerText).join().length;
+
+    assert.ok(element, 'line clamp target exists');
+    assert.equal(contentLengthBefore, 43);
+
+    // Force evaluate after width changes in the parent container
+    element.querySelector('#test-conatiner').style.width = '200px';
+    this.set('forceEvaluate', true);
+
+    setTimeout(() => {
+      const linesExceptLast = Array.from(
+        element.querySelectorAll(
+          ".lt-line-clamp__line:not(.lt-line-clamp__line--last)"
+        ));
+      const contentLengthAfter = linesExceptLast.map(e => e.innerText).join().length;
+
+      assert.notDeepEqual(contentLengthBefore, contentLengthAfter);
+      assert.equal(contentLengthAfter, 21);
+
+      done();
+    }, 100);
+  });
+
 })

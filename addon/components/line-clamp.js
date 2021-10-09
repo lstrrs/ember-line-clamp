@@ -61,6 +61,7 @@ const HTML_ENTITIES_TO_CHARS = {
  * @param {Action}  onCollapse Action triggered when text is collapsed
  * @param {Boolean} useJsOnly @default false Disables native CSS solution
  * @param {Action}  handleTruncate @returns {boolean} didTruncate Action triggered every time text goes true truncation process. Only called when native CSS solution isn't used. If didTruncate is true, text truncated and ellipsis applied.
+ * @param {Boolean} forceEvaluate @default false Force evaluate the line clamp based on some condition
  *
  * @example
  * ```
@@ -162,7 +163,22 @@ export default Component.extend({
    * @type {String}
    * @default 'See Less'
    */
-  seeLessText: 'See Less',
+	seeLessText: 'See Less',
+
+	/**
+	 * Text suffix to append after the truncation
+	 * @type {String}
+	 * @default ""
+	 * @example: "Some sample content that is truncated now...continue"
+	 */
+  textSuffix: "",
+
+  /**
+	 * Force evaluate the line clamp ?
+	 * @type {Boolean}
+	 * @default false
+	 */
+	forceEvaluate: false,
 
   /**
    * Based on showMoreButton and interactive flags
@@ -278,6 +294,12 @@ export default Component.extend({
       this._handleNewTruncateAttr(this.get('truncate'));
       this.set('_oldTruncate', this.get('truncate'));
     }
+
+    // For cases where the clamping has to be forced dynamically
+		// ex: parent container resizing, etc.,
+		if (this.get('forceEvaluate')) {
+			this.onResize();
+		}
   },
 
   didInsertElement() {
@@ -319,7 +341,7 @@ export default Component.extend({
     this._scheduledResizeAnimationFrame = window.requestAnimationFrame(this._calculateTargetWidth);
   },
 
-  onTruncate(didTruncate) {
+	onTruncate(didTruncate) {
     this._handleTruncate(didTruncate);
 
     const handleTruncate = this.getAttr('handleTruncate');
@@ -521,7 +543,9 @@ export default Component.extend({
     const textLines = formattedText.split('\n').map(line => line.trim().split(' '));
     let didTruncate = true;
 
-    const ellipsisWidth = this._getEllipsisWidth();
+		const ellipsisWidth = this._getEllipsisWidth();
+		const textSuffixWidth = this._measureWidth(this.textSuffix);
+		const textSuffixLength = this.textSuffix.length;
 
     for (let line = 1; line <= numLines; line += 1) {
       const textWords = textLines[0];
@@ -536,17 +560,24 @@ export default Component.extend({
         continue;
       }
 
-      const resultLine = textWords.join(' ');
+			let resultLine = textWords.join(' ');
+			let resultLineWidth = this._measureWidth(resultLine);
 
-      if (this._measureWidth(resultLine) <= this.targetWidth) {
+      if (resultLineWidth <= this.targetWidth) {
         if (textLines.length === 1) {
           // Line is end of text and fits without truncating
-          didTruncate = false;
+					didTruncate = false;
+
+					let isTextWidthWithSuffixNotWithinTarget = (resultLineWidth + textSuffixWidth) > this.targetWidth;
+					if (this.textSuffix && isTextWidthWithSuffixNotWithinTarget) {
+						resultLine = resultLine.slice(0, -textSuffixLength);
+						resultLineWidth = this._measureWidth(resultLine);
+					}
 
           lines.push({
             text: resultLine,
             lastLine: true,
-            needsEllipsis: false,
+						needsEllipsis: isTextWidthWithSuffixNotWithinTarget
           });
           break;
         }
@@ -554,7 +585,7 @@ export default Component.extend({
 
       if (line === numLines) {
         // Binary search determining the longest possible line including truncate string
-        const textRest = textWords.join(' ');
+        let textRest = textWords.join(' ');
 
         let lower = 0;
         let upper = textRest.length - 1;
@@ -564,16 +595,17 @@ export default Component.extend({
 
           const testLine = textRest.slice(0, middle + 1);
 
-          if (this._measureWidth(testLine) + ellipsisWidth <= this.targetWidth) {
+					const currentWidths = this._measureWidth(testLine) + ellipsisWidth + textSuffixWidth;
+          if (currentWidths <= this.targetWidth) {
             lower = middle + 1;
           } else {
             upper = middle - 1;
           }
-        }
+				}
 
         // Add line - last
         lines.push({
-          text: textRest.slice(0, lower),
+          text: this.textSuffix ? textRest.slice(0, lower).slice(0, -textSuffixLength) : textRest.slice(0, lower),
           lastLine: true,
           needsEllipsis: true,
         });
