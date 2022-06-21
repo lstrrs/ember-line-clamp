@@ -64,7 +64,7 @@ const HTML_ENTITIES_TO_CHARS = {
  *
  * @example
  * ```
- * {{line-clamp text="Some long text"}}
+ * <LineClamp @text="Some long text" />
  * ```
  *
  * @class LineClampComponent

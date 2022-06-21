@@ -1,8 +1,8 @@
 <h2 id="title">Welcome to Ember</h2>
 
-{{line-clamp
-  text=model.text
-  lines=1
-}}
+<LineClamp
+  @text={{this.model.text}}
+  @lines={{1}}
+/>
 
 {{outlet}}
