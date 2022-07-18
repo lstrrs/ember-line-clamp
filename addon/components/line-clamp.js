@@ -1,11 +1,11 @@
-import Component from '@ember/component';
-import { inject as service } from '@ember/service';
-import layout from '../templates/components/line-clamp';
-import { computed } from '@ember/object';
-import { htmlSafe, isHTMLSafe } from '@ember/string';
-import { mutateDOM } from 'ember-batcher';
+import Component from "@ember/component";
+import { inject as service } from "@ember/service";
+import layout from "../templates/components/line-clamp";
+import { computed } from "@ember/object";
+import { htmlSafe, isHTMLSafe } from "@ember/template";
+import { mutateDOM } from "ember-batcher";
 
-const LINE_CLAMP_CLASS = 'lt-line-clamp';
+const LINE_CLAMP_CLASS = "lt-line-clamp";
 const SINGLE_LINE_CLAMP_CLASS = `${LINE_CLAMP_CLASS} ${LINE_CLAMP_CLASS}--single-line`;
 const MULTI_LINE_CLAMP_CLASS = `${LINE_CLAMP_CLASS} ${LINE_CLAMP_CLASS}--multi-line`;
 const ELLIPSIS_CLASS = `${LINE_CLAMP_CLASS}__ellipsis`;
@@ -16,17 +16,17 @@ const MORE_CLASS = `${LINE_CLAMP_CLASS}__more`;
  * Ember.Handlebars.Utils.escapeExpression has not unescapeExpression equivalent
  * hence I have unescape the text myself.
  */
-const R_ENTITIES = /&(?:([a-z0-9]+)|#x([\da-f]{1,6})|#(\d{1,8}));/ig;
+const R_ENTITIES = /&(?:([a-z0-9]+)|#x([\da-f]{1,6})|#(\d{1,8}));/gi;
 const HTML_ENTITIES_TO_CHARS = {
-  '&amp;': '&',
-  '&lt;': '<',
-  '&gt;': '>',
-  '&quot;': '"',
-  '&#x27;': "'",
-  '&#x60;': '`',
-  '&#x3D;': '=',
-  '&#x3d;': '=',
-  '&#8212': '—',
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&#x27;": "'",
+  "&#x60;": "`",
+  "&#x3D;": "=",
+  "&#x3d;": "=",
+  "&#8212": "—",
 };
 
 /**
@@ -72,34 +72,34 @@ const HTML_ENTITIES_TO_CHARS = {
 export default Component.extend({
   layout,
 
-  unifiedEventHandler: service('unified-event-handler'),
+  unifiedEventHandler: service("unified-event-handler"),
 
-  componentName: 'LineClamp',
+  componentName: "LineClamp",
 
-  tagName: 'div',
+  tagName: "div",
 
   /**
    * Attribute binding for class - sets specific CSS classes when CSS solution is available
    */
-  classNameBindings: ['_lineClampClass'],
+  classNameBindings: ["_lineClampClass"],
 
   /**
    * Attribute binding for style - sets specific CSS styles when CSS solution is available
    */
-  attributeBindings: ['_lineClampStyle:style'],
+  attributeBindings: ["_lineClampStyle:style"],
 
   /**
    * Text to truncate/clamp
    * @type {String}
    */
-  text: '',
+  text: "",
 
   /**
    * Characters/text to be used as the overflow/ellipsis when text is truncated
    * @type {String}
    * @default '...'
    */
-  ellipsis: '...',
+  ellipsis: "...",
 
   /**
    * The number of lines at which to clamp text
@@ -155,14 +155,14 @@ export default Component.extend({
    * @type {String}
    * @default 'See More'
    */
-  seeMoreText: 'See More',
+  seeMoreText: "See More",
 
   /**
    * Text to display in "see less" interactive element
    * @type {String}
    * @default 'See Less'
    */
-  seeLessText: 'See Less',
+  seeLessText: "See Less",
 
   /**
    * Based on showMoreButton and interactive flags
@@ -216,18 +216,25 @@ export default Component.extend({
    * @type {String}
    * @private
    */
-  _strippedText: computed('text', '_stripText', function getStrippedText() {
-    if (typeof FastBoot === 'undefined') {
-      if (typeof window !== 'undefined' && !!this.element && this.get('_stripText')) {
-        if ((this._shouldUseNativeLineClampCSS() || this._shouldUseNativeTextOverflowCSS())) {
-          return this._stripBrTags(this._unescapeText(this.get('text') || ''));
+  _strippedText: computed("text", "_stripText", function getStrippedText() {
+    if (typeof FastBoot === "undefined") {
+      if (
+        typeof window !== "undefined" &&
+        !!this.element &&
+        this.get("_stripText")
+      ) {
+        if (
+          this._shouldUseNativeLineClampCSS() ||
+          this._shouldUseNativeTextOverflowCSS()
+        ) {
+          return this._stripBrTags(this._unescapeText(this.get("text") || ""));
         }
 
-        return '';
+        return "";
       }
     }
 
-    return '';
+    return "";
   }),
 
   /**
@@ -235,23 +242,29 @@ export default Component.extend({
    * @type {Array}
    * @private
    */
-  _textLines: computed('lines', 'text', 'targetWidth', '_expanded', function getTextLines() {
-    if (typeof FastBoot === 'undefined') {
-      const mounted = !!(this.element && this.get('targetWidth'));
-      if (typeof window !== 'undefined' && mounted) {
-        if (!this.get('_expanded')) {
-          return this._getLines();
-        } else {
-          this.onTruncate(false);
-          return [];
+  _textLines: computed(
+    "lines",
+    "text",
+    "targetWidth",
+    "_expanded",
+    function getTextLines() {
+      if (typeof FastBoot === "undefined") {
+        const mounted = !!(this.element && this.get("targetWidth"));
+        if (typeof window !== "undefined" && mounted) {
+          if (!this.get("_expanded")) {
+            return this._getLines();
+          } else {
+            this.onTruncate(false);
+            return [];
+          }
         }
+
+        return [];
       }
 
       return [];
     }
-
-    return [];
-  }),
+  ),
 
   init() {
     this._super(...arguments);
@@ -274,23 +287,26 @@ export default Component.extend({
   },
 
   didReceiveAttrs() {
-    if (this.get('truncate') !== this.get('_oldTruncate')) {
-      this._handleNewTruncateAttr(this.get('truncate'));
-      this.set('_oldTruncate', this.get('truncate'));
+    if (this.get("truncate") !== this.get("_oldTruncate")) {
+      this._handleNewTruncateAttr(this.get("truncate"));
+      this.set("_oldTruncate", this.get("truncate"));
     }
   },
 
   didInsertElement() {
     if (this._shouldUseNativeLineClampCSS()) {
-      this.set('_lineClampClass', MULTI_LINE_CLAMP_CLASS);
-      this.set('_lineClampStyle', htmlSafe(`-webkit-line-clamp: ${this.get('lines')}`));
-      this.set('_stripText', this.stripText);
+      this.set("_lineClampClass", MULTI_LINE_CLAMP_CLASS);
+      this.set(
+        "_lineClampStyle",
+        htmlSafe(`-webkit-line-clamp: ${this.get("lines")}`)
+      );
+      this.set("_stripText", this.stripText);
     } else if (this._shouldUseNativeTextOverflowCSS()) {
-      this.set('_lineClampClass', SINGLE_LINE_CLAMP_CLASS);
-      this.set('_stripText', this.stripText);
+      this.set("_lineClampClass", SINGLE_LINE_CLAMP_CLASS);
+      this.set("_stripText", this.stripText);
     } else {
-      const canvas = document.createElement('canvas');
-      this.canvasContext = canvas.getContext('2d');
+      const canvas = document.createElement("canvas");
+      this.canvasContext = canvas.getContext("2d");
 
       this._createDummyEllipsisElement();
       this.element.appendChild(this.dummyEllipsisElement);
@@ -316,30 +332,37 @@ export default Component.extend({
       window.cancelAnimationFrame(this._scheduledResizeAnimationFrame);
     }
 
-    this._scheduledResizeAnimationFrame = window.requestAnimationFrame(this._calculateTargetWidth);
+    this._scheduledResizeAnimationFrame = window.requestAnimationFrame(
+      this._calculateTargetWidth
+    );
   },
 
   onTruncate(didTruncate) {
     this._handleTruncate(didTruncate);
 
-    const handleTruncate = this.getAttr('handleTruncate');
+    const handleTruncate = this.getAttr("handleTruncate");
     if (handleTruncate) {
-      if (typeof handleTruncate === 'function') {
+      if (typeof handleTruncate === "function") {
         handleTruncate(didTruncate);
       } else {
-        this.sendAction('handleTruncate', didTruncate); // eslint-disable-line
+        this.sendAction("handleTruncate", didTruncate); // eslint-disable-line
       }
     }
   },
 
   _handleNewTruncateAttr(truncate) {
     if (this._shouldUseNativeLineClampCSS()) {
-      this.set('_lineClampClass', truncate ? MULTI_LINE_CLAMP_CLASS : '');
-      this.set('_lineClampStyle', truncate ? htmlSafe(`-webkit-line-clamp: ${this.get('lines')}`) : htmlSafe(''));
-      this.set('_stripText', this.stripText && truncate);
+      this.set("_lineClampClass", truncate ? MULTI_LINE_CLAMP_CLASS : "");
+      this.set(
+        "_lineClampStyle",
+        truncate
+          ? htmlSafe(`-webkit-line-clamp: ${this.get("lines")}`)
+          : htmlSafe("")
+      );
+      this.set("_stripText", this.stripText && truncate);
     } else if (this._shouldUseNativeTextOverflowCSS()) {
-      this.set('_lineClampClass', truncate ? SINGLE_LINE_CLAMP_CLASS : '');
-      this.set('_stripText', this.stripText && truncate);
+      this.set("_lineClampClass", truncate ? SINGLE_LINE_CLAMP_CLASS : "");
+      this.set("_stripText", this.stripText && truncate);
     }
 
     this._onToggleTruncate();
@@ -361,14 +384,14 @@ export default Component.extend({
 
       const style = window.getComputedStyle(this.element);
       const font = [
-        style['font-weight'],
-        style['font-style'],
-        style['font-size'],
-        style['font-family']
-      ].join(' ');
+        style["font-weight"],
+        style["font-style"],
+        style["font-size"],
+        style["font-family"],
+      ].join(" ");
 
       this.canvasContext.font = font;
-      this.set('targetWidth', targetWidth);
+      this.set("targetWidth", targetWidth);
     }
   },
 
@@ -418,9 +441,11 @@ export default Component.extend({
    * @private
    */
   _createDummyEllipsisElement() {
-    this.dummyEllipsisElement = document.createElement('span');
+    this.dummyEllipsisElement = document.createElement("span");
     this.dummyEllipsisElement.className = `${ELLIPSIS_CLASS} ${ELLIPSIS_DUMMY_CLASS}`;
-    this.dummyEllipsisElement.innerHTML = this._isInteractive ? `${this.ellipsis} <a class="${MORE_CLASS}" href="#" role="button">${this.seeMoreText}</a>` : this.ellipsis;
+    this.dummyEllipsisElement.innerHTML = this._isInteractive
+      ? `${this.ellipsis} <a class="${MORE_CLASS}" href="#" role="button">${this.seeMoreText}</a>`
+      : this.ellipsis;
   },
 
   /**
@@ -430,7 +455,11 @@ export default Component.extend({
    * @private
    */
   _shouldUseNativeLineClampCSS() {
-    return this.get('useJsOnly') ? false : 'webkitLineClamp' in document.body.style && !this._isInteractive && this.get('lines') > 1;
+    return this.get("useJsOnly")
+      ? false
+      : "webkitLineClamp" in document.body.style &&
+          !this._isInteractive &&
+          this.get("lines") > 1;
   },
 
   /**
@@ -440,7 +469,9 @@ export default Component.extend({
    * @private
    */
   _shouldUseNativeTextOverflowCSS() {
-    return this.get('useJsOnly') ? false : !this._isInteractive && this.get('lines') === 1;
+    return this.get("useJsOnly")
+      ? false
+      : !this._isInteractive && this.get("lines") === 1;
   },
 
   /**
@@ -450,7 +481,11 @@ export default Component.extend({
    * @private
    */
   _bindResize() {
-    this.get('unifiedEventHandler').register('window', 'resize', this.get('onResize'));
+    this.get("unifiedEventHandler").register(
+      "window",
+      "resize",
+      this.get("onResize")
+    );
     this._resizeHandlerRegistered = true;
   },
 
@@ -462,7 +497,11 @@ export default Component.extend({
    */
   _unbindResize() {
     if (this._resizeHandlerRegistered) {
-      this.get('unifiedEventHandler').unregister('window', 'resize', this.get('onResize'));
+      this.get("unifiedEventHandler").unregister(
+        "window",
+        "resize",
+        this.get("onResize")
+      );
       this._resizeHandlerRegistered = false;
     }
   },
@@ -474,7 +513,10 @@ export default Component.extend({
    * @private
    */
   _stripBrTags(text) {
-    return text.toString().replace(/<br.*?[/]?>/gi, ' ').replace(/\r\n|\n|\r/g, ' ');
+    return text
+      .toString()
+      .replace(/<br.*?[/]?>/gi, " ")
+      .replace(/\r\n|\n|\r/g, " ");
   },
 
   /**
@@ -484,7 +526,7 @@ export default Component.extend({
    * @private
    */
   _convertBrTags(text) {
-    return text.toString().replace(/<br.*?[/]?>/gi, '\n');
+    return text.toString().replace(/<br.*?[/]?>/gi, "\n");
   },
 
   /**
@@ -495,14 +537,17 @@ export default Component.extend({
    * @private
    */
   _unescapeText(text) {
-    return text.toString().replace(R_ENTITIES, match =>
-      HTML_ENTITIES_TO_CHARS[match] ||
-      HTML_ENTITIES_TO_CHARS[match.replace(
-        /([0-9]+)/gi,
-        m => `x${(+m).toString(16)}`
-      )] ||
-      match
-    );
+    return text
+      .toString()
+      .replace(
+        R_ENTITIES,
+        (match) =>
+          HTML_ENTITIES_TO_CHARS[match] ||
+          HTML_ENTITIES_TO_CHARS[
+            match.replace(/([0-9]+)/gi, (m) => `x${(+m).toString(16)}`)
+          ] ||
+          match
+      );
   },
 
   /**
@@ -514,11 +559,15 @@ export default Component.extend({
    */
   _getLines() {
     const lines = [];
-    const numLines = this.get('lines');
-    const text = this.get('text') || '';
+    const numLines = this.get("lines");
+    const text = this.get("text") || "";
     const textToTruncate = isHTMLSafe(text) ? this._unescapeText(text) : text;
-    const formattedText = this.stripText ? this._stripBrTags(textToTruncate) : this._convertBrTags(textToTruncate);
-    const textLines = formattedText.split('\n').map(line => line.trim().split(' '));
+    const formattedText = this.stripText
+      ? this._stripBrTags(textToTruncate)
+      : this._convertBrTags(textToTruncate);
+    const textLines = formattedText
+      .split("\n")
+      .map((line) => line.trim().split(" "));
     let didTruncate = true;
 
     const ellipsisWidth = this._getEllipsisWidth();
@@ -536,7 +585,7 @@ export default Component.extend({
         continue;
       }
 
-      const resultLine = textWords.join(' ');
+      const resultLine = textWords.join(" ");
 
       if (this._measureWidth(resultLine) <= this.targetWidth) {
         if (textLines.length === 1) {
@@ -554,7 +603,7 @@ export default Component.extend({
 
       if (line === numLines) {
         // Binary search determining the longest possible line including truncate string
-        const textRest = textWords.join(' ');
+        const textRest = textWords.join(" ");
 
         let lower = 0;
         let upper = textRest.length - 1;
@@ -564,7 +613,10 @@ export default Component.extend({
 
           const testLine = textRest.slice(0, middle + 1);
 
-          if (this._measureWidth(testLine) + ellipsisWidth <= this.targetWidth) {
+          if (
+            this._measureWidth(testLine) + ellipsisWidth <=
+            this.targetWidth
+          ) {
             lower = middle + 1;
           } else {
             upper = middle - 1;
@@ -585,7 +637,7 @@ export default Component.extend({
         while (lower <= upper) {
           const middle = Math.floor((lower + upper) / 2);
 
-          const testLine = textWords.slice(0, middle + 1).join(' ');
+          const testLine = textWords.slice(0, middle + 1).join(" ");
 
           if (this._measureWidth(testLine) <= this.targetWidth) {
             lower = middle + 1;
@@ -603,7 +655,7 @@ export default Component.extend({
 
         // Add line
         lines.push({
-          text: textWords.slice(0, lower).join(' '),
+          text: textWords.slice(0, lower).join(" "),
         });
         textLines[0].splice(0, lower);
       }
@@ -622,47 +674,51 @@ export default Component.extend({
    * @private
    */
   _handleTruncate(truncated) {
-    if (this.get('_truncated') !== truncated) {
-      this.set('_truncated', truncated);
+    if (this.get("_truncated") !== truncated) {
+      this.set("_truncated", truncated);
     }
   },
 
   _onToggleTruncate() {
-    this.toggleProperty('_expanded');
+    this.toggleProperty("_expanded");
 
-    const justExpanded = this.get('_expanded');
+    const justExpanded = this.get("_expanded");
 
     if (justExpanded) {
       mutateDOM(() => {
-        const showLessButton = this.element.querySelector('#line-clamp-show-less-button');
+        const showLessButton = this.element.querySelector(
+          "#line-clamp-show-less-button"
+        );
         if (showLessButton) {
           showLessButton.focus();
         }
       });
-      const onExpand = this.getAttr('onExpand');
+      const onExpand = this.getAttr("onExpand");
 
       if (onExpand) {
-        if (typeof onExpand === 'function') {
+        if (typeof onExpand === "function") {
           onExpand();
         } else {
-          this.sendAction('onExpand'); // eslint-disable-line
+          this.sendAction("onExpand"); // eslint-disable-line
         }
       }
     } else {
       mutateDOM(() => {
-        const showMoreButton = this.element.querySelector('#line-clamp-show-more-button');
+        const showMoreButton = this.element.querySelector(
+          "#line-clamp-show-more-button"
+        );
         if (showMoreButton) {
           showMoreButton.focus();
         }
       });
 
-      const onCollapse = this.getAttr('onCollapse');
+      const onCollapse = this.getAttr("onCollapse");
 
       if (onCollapse) {
-        if (typeof onCollapse === 'function') {
+        if (typeof onCollapse === "function") {
           onCollapse();
         } else {
-          this.sendAction('onCollapse'); // eslint-disable-line
+          this.sendAction("onCollapse"); // eslint-disable-line
         }
       }
     }
