@@ -1,31 +1,59 @@
-{{#each _textLines as |line|}}
+{{#each this._textLines as |line|}}
   {{#if line.lastLine}}
     <span class="lt-line-clamp__line lt-line-clamp__line--last">
       {{unbound line.text}}
       {{~#if line.needsEllipsis~}}
-        <span class="lt-line-clamp__ellipsis"><div class="lt-line-clamp__dummy-element">{{unbound ellipsis}}</div>
-        {{!-- Use div to wrap the ellipsis up so that the see more button can work after google translates the page (Issue #48)--}}
-          {{#if _showMoreButton}}
-            <a data-test-line-clamp-show-more-button="true" href="#" role="button" id="line-clamp-show-more-button" aria-expanded="false" aria-label={{if seeMoreA11yText (unbound seeMoreA11yText) false}} class="lt-line-clamp__more" onclick={{action "toggleTruncate"}}>{{unbound seeMoreText}}</a>
+        <span class="lt-line-clamp__ellipsis"><div
+            class="lt-line-clamp__dummy-element"
+          >{{unbound this.ellipsis}}</div>
+          {{! Use div to wrap the ellipsis up so that the see more button can work after google translates the page (Issue #48)}}
+          {{#if this._showMoreButton}}
+            <a
+              data-test-line-clamp-show-more-button="true"
+              href="#"
+              role="button"
+              id="line-clamp-show-more-button"
+              aria-expanded="false"
+              aria-label={{if
+                this.seeMoreA11yText
+                (unbound this.seeMoreA11yText)
+                false
+              }}
+              class="lt-line-clamp__more"
+              onclick={{action "toggleTruncate"}}
+            >{{unbound this.seeMoreText}}</a>
           {{/if}}
         </span>
       {{~/if~}}
     </span>
   {{else if line.newLine}}
-    <br>
+    <br />
   {{else}}
     <span class="lt-line-clamp__line">{{unbound line.text}}</span>
   {{/if}}
-{{else if _strippedText}}
-  {{_strippedText}}
+{{else if this._strippedText}}
+  {{this._strippedText}}
 {{else}}
-  <span class="lt-line-clamp__raw-line">{{text}}</span>
+  <span class="lt-line-clamp__raw-line">{{this.text}}</span>
 {{/each}}
 
-{{#if _showLessButton}}
-  {{#unless _truncated}}
-    {{#if _expanded}}
-      <span><a data-test-line-clamp-show-less-button="true" id="line-clamp-show-less-button"  href="#" role="button" aria-expanded="true" aria-label={{if seeLessA11yText (unbound seeLessA11yText) false}} class="lt-line-clamp__less" onclick={{action "toggleTruncate"}}>{{unbound seeLessText}}</a></span>
+{{#if this._showLessButton}}
+  {{#unless this._truncated}}
+    {{#if this._expanded}}
+      <span><a
+          data-test-line-clamp-show-less-button="true"
+          id="line-clamp-show-less-button"
+          href="#"
+          role="button"
+          aria-expanded="true"
+          aria-label={{if
+            this.seeLessA11yText
+            (unbound this.seeLessA11yText)
+            false
+          }}
+          class="lt-line-clamp__less"
+          onclick={{action "toggleTruncate"}}
+        >{{unbound this.seeLessText}}</a></span>
     {{/if}}
   {{/unless}}
 {{/if}}
