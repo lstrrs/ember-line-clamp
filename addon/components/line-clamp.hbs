@@ -21,7 +21,7 @@
                   data-test-line-clamp-show-more-button="true"
                   href="#"
                   role="button"
-                  id="line-clamp-show-more-button"
+                  id="line-clamp-show-more-button-{{this.buttonId}}"
                   aria-expanded="false"
                   aria-label={{@seeMoreA11yText}}
                   class="lt-line-clamp__more"
@@ -47,7 +47,7 @@
         {{#if this._expanded}}
           <span><a
               data-test-line-clamp-show-less-button="true"
-              id="line-clamp-show-less-button"
+              id="line-clamp-show-less-button-{{this.buttonId}}"
               href="#"
               role="button"
               aria-expanded="true"

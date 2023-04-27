@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
+import { guidFor } from '@ember/object/internals';
 import { htmlSafe, isHTMLSafe } from '@ember/template';
 import { scheduleOnce } from '@ember/runloop';
 import { debug } from '@ember/debug';
@@ -317,6 +318,12 @@ export default class LineClampComponent extends Component {
     }
     return [];
   }
+
+  /**
+   * Unique identifier used to differentiate between multiple instances.
+   * @type {String}
+   */
+  buttonId = guidFor(this);
 
   constructor() {
     super(...arguments);
@@ -668,7 +675,7 @@ export default class LineClampComponent extends Component {
     if (justExpanded) {
       mutateDOM(() => {
         const showLessButton = this.element.querySelector(
-          '#line-clamp-show-less-button'
+          `#line-clamp-show-less-button-${this.buttonId}`
         );
         if (showLessButton) {
           showLessButton.focus();
@@ -680,7 +687,7 @@ export default class LineClampComponent extends Component {
     } else {
       mutateDOM(() => {
         const showMoreButton = this.element.querySelector(
-          '#line-clamp-show-more-button'
+          `#line-clamp-show-more-button-${this.buttonId}`
         );
         if (showMoreButton) {
           showMoreButton.focus();
