@@ -1,5 +1,5 @@
 import { hbs } from 'ember-cli-htmlbars';
-import { htmlSafe } from '@ember/string';
+import { htmlSafe } from '@ember/template';
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render, click, triggerEvent } from '@ember/test-helpers';
@@ -496,7 +496,7 @@ module('Integration | Component | line clamp', function (hooks) {
   test('resizing triggers component to re-truncate', async function (assert) {
     assert.expect(5);
 
-    await render(hbs`<div id="test-conatiner" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+    await render(hbs`<div id="test-container" style="width: 300px; font-size: 16px; font-family: sans-serif;">
       <LineClamp
         @text="helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld"
       />
@@ -513,7 +513,7 @@ module('Integration | Component | line clamp', function (hooks) {
     assert.dom(element).containsText('... See More');
 
     // Mimic window resize
-    element.querySelector('#test-conatiner').style.width = '960px';
+    element.querySelector('#test-container').style.width = '960px';
     await triggerEvent(window, 'resize');
 
     waitForResizeRAF(assert, function () {
@@ -533,10 +533,33 @@ module('Integration | Component | line clamp', function (hooks) {
     this.onResizeSpy = onResizeSpy;
 
     await render(hbs`
-      <div id="test-conatiner" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+      <div id="test-container" style="width: 300px; font-size: 16px; font-family: sans-serif;">
         <LineClamp
           @useJsOnly={{false}}
           @interactive={{false}}
+          @onResizeSpy={{this.onResizeSpy}}
+          @text="helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld"
+        />
+      </div>
+    `);
+
+    waitForResizeRAF(assert, function () {
+      assert.strictEqual(onResizeSpy.callCount, 0);
+    });
+  });
+
+  test('When using native CSS text overflow, onResize is not called', async function (assert) {
+    assert.expect(1);
+
+    const onResizeSpy = sinon.spy();
+    this.onResizeSpy = onResizeSpy;
+
+    await render(hbs`
+      <div id="test-container" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+        <LineClamp
+          @useJsOnly={{false}}
+          @interactive={{false}}
+          @lines={{1}}
           @onResizeSpy={{this.onResizeSpy}}
           @text="helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld"
         />
@@ -555,7 +578,7 @@ module('Integration | Component | line clamp', function (hooks) {
     this.onResizeSpy = onResizeSpy;
 
     await render(hbs`
-      <div id="test-conatiner" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+      <div id="test-container" style="width: 300px; font-size: 16px; font-family: sans-serif;">
         <LineClamp
           @useJsOnly={{true}}
           @onResizeSpy={{this.onResizeSpy}}
@@ -576,7 +599,7 @@ module('Integration | Component | line clamp', function (hooks) {
     this.assertOnCollapse = () =>
       assert.ok(true, 'onCollapse action triggered');
 
-    await render(hbs`<div id="test-conatiner" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+    await render(hbs`<div id="test-container" style="width: 300px; font-size: 16px; font-family: sans-serif;">
       <LineClamp
         @text="helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld"
         @onExpand={{this.assertOnExpand}}
@@ -612,7 +635,7 @@ module('Integration | Component | line clamp', function (hooks) {
 
     await render(hbs`
       <div
-        id="test-conatiner"
+        id="test-container"
         style="width: 300px; font-size: 16px; font-family: sans-serif;"
         {{action this.assertOnParentAction}}
         {{on 'click' this.assertOnParentClick}}
@@ -647,7 +670,7 @@ module('Integration | Component | line clamp', function (hooks) {
     this.textToTruncate =
       'helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld';
 
-    await render(hbs`<div id="test-conatiner" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+    await render(hbs`<div id="test-container" style="width: 300px; font-size: 16px; font-family: sans-serif;">
       <LineClamp
         @text={{this.textToTruncate}}
       />
@@ -671,7 +694,7 @@ module('Integration | Component | line clamp', function (hooks) {
       'helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld';
     this.linesToTruncate = 3;
 
-    await render(hbs`<div id="test-conatiner" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+    await render(hbs`<div id="test-container" style="width: 300px; font-size: 16px; font-family: sans-serif;">
       <LineClamp
         @text={{this.textToTruncate}}
         @lines={{this.linesToTruncate}}
@@ -696,7 +719,7 @@ module('Integration | Component | line clamp', function (hooks) {
       'helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld';
     this.truncate = true;
 
-    await render(hbs`<div id="test-conatiner" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+    await render(hbs`<div id="test-container" style="width: 300px; font-size: 16px; font-family: sans-serif;">
       <LineClamp
         @text={{this.textToTruncate}}
         @truncate={{this.truncate}}
@@ -724,7 +747,7 @@ module('Integration | Component | line clamp', function (hooks) {
       'helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld';
     this.truncate = false;
 
-    await render(hbs`<div id="test-conatiner" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+    await render(hbs`<div id="test-container" style="width: 300px; font-size: 16px; font-family: sans-serif;">
       <LineClamp
         @text={{this.textToTruncate}}
         @truncate={{this.truncate}}
@@ -760,7 +783,7 @@ module('Integration | Component | line clamp', function (hooks) {
     this.truncate = true;
     this.stripText = true;
 
-    await render(hbs`<div id="test-conatiner" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+    await render(hbs`<div id="test-container" style="width: 300px; font-size: 16px; font-family: sans-serif;">
       <LineClamp
         @truncate={{this.truncate}}
         @text={{this.textToTruncate}}
@@ -791,7 +814,7 @@ module('Integration | Component | line clamp', function (hooks) {
     this.truncate = true;
     this.stripText = false;
 
-    await render(hbs`<div id="test-conatiner" style="width: 300px; font-size: 16px; font-family: sans-serif;">
+    await render(hbs`<div id="test-container" style="width: 300px; font-size: 16px; font-family: sans-serif;">
       <LineClamp
         @truncate={{this.truncate}}
         @text={{this.textToTruncate}}
