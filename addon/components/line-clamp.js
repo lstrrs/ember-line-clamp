@@ -225,10 +225,9 @@ export default class LineClampComponent extends Component {
    * @return {DidResizeModifier | null}
    */
   get didResize() {
-    return this._shouldUseNativeLineClampCSS ||
-      this._shouldUseNativeTextOverflowCSS
-      ? null
-      : DidResizeModifier;
+    const shouldUseNativeCSS =
+      this._shouldUseNativeLineClampCSS || this._shouldUseNativeTextOverflowCSS;
+    return shouldUseNativeCSS ? null : DidResizeModifier;
   }
 
   /**
