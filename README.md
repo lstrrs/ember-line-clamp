@@ -1,2 +1,3 @@
-# ember-line-clamp
-This repo was taken over for responsible disclosure. No malicious content is served.
+# This repo was taken over for responsible disclosure. No malicious content is served.
+
+hackerone.com/jalwan
